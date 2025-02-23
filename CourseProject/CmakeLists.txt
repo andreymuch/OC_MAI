@@ -1,0 +1,10 @@
+project(CourseProject)
+
+
+# Исполняемый файл для MasterNode
+add_executable(server src/server/main.cpp)
+
+# Исполняемый файл для WorkerNode
+add_executable(client src/client/main.cpp)
+
+

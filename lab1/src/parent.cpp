@@ -46,7 +46,7 @@ int main() {
 
    
     // Запускаем дочерний процесс 2
-    if (!CreateProcess(TEXT("F:\\Dokument\\program\\CPP\\OC\\build\\lab1\\Debug\\child2.exe"), NULL, NULL, NULL, FALSE, 0, NULL, NULL, &si2, &pi2)) {
+    if (!CreateProcessA(TEXT("F:\\Dokument\\program\\CPP\\OC\\build\\lab1\\Debug\\child2.exe"), NULL, NULL, NULL, FALSE, 0, NULL, NULL, &si2, &pi2)) {
         std::cerr << "Не удалось запустить процесс child2" << std::endl;
         return 1;
     }
