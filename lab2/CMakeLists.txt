@@ -1,11 +1,14 @@
-# Устанавливаем имя проекта для lab1
-#project(Lab2)
+project(Lab2)
 
-# Добавляем исполняемый файл для lab1
-#add_executable(lab2 src/main.cpp src/box_capacity.cpp test_main.cpp)
+set(SRC_FILES 
+    src/main.cpp
+    src/filters.cpp
+    src/matrix.cpp
+    )
 
-# Подключаем Google Test
-#target_link_libraries(lab2 gtest gtest_main)
+add_executable(lab2 ${SRC_FILES})
+add_executable(lab2_test test/filters_test.cpp)
+target_link_libraries(lab2)
+target_link_libraries(lab2_test gtest gtest_main)
 
-# Добавляем тесты
-#add_test(NAME Lab1Test COMMAND lab2)
+add_test(NAME Lab2Test COMMAND lab2_test)

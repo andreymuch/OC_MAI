@@ -1,0 +1,16 @@
+project(Lab5-7)
+
+# set (cppzmq_DIR F:/vcpkg/packages/cppzmq_x64-windows/share/cppzmq)
+# find_package(cppzmq CONFIG REQUIRED)
+
+# Исполняемый файл для MasterNode
+add_executable(master src/master/main.cpp)
+target_link_libraries (master cppzmq)
+target_link_libraries (master libzmq)
+
+
+# Исполняемый файл для WorkerNode
+add_executable(worker src/worker/main.cpp)
+target_link_libraries (worker libzmq)
+target_link_libraries (worker cppzmq)
+
