@@ -10,7 +10,7 @@ int main(int argc, char* argv[]) {
     Matrix inputMatrix(30, 30);
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dis(0.0, 10.0); // Generate random numbers between 0.0 and 10.0
+    std::uniform_real_distribution<> dis(0.0, 10.0);
 
     for (int i = 0; i < 30; ++i) {
         for (int j = 0; j < 30; ++j) {

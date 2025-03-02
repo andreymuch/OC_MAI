@@ -13,7 +13,6 @@ int main() {
     char* pBuf;
     std::locale loc("ru_RU.UTF-8");
 
-    // Подключение к разделяемой памяти
     hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "SharedMemory");
     if (hMapFile == NULL) {
         std::cerr << "Не удалось открыть отображаемый файл: " << GetLastError() << std::endl;
@@ -26,13 +25,10 @@ int main() {
         CloseHandle(hMapFile);
         return 1;
     }
-
-    // Преобразование строки в верхний регистр
     for (int i = 0; pBuf[i]; i++) {
         pBuf[i] = toupper(pBuf[i], loc);
     }
 
-    // Очистка ресурсов
     UnmapViewOfFile(pBuf);
     CloseHandle(hMapFile);
 

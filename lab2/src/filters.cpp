@@ -137,7 +137,7 @@ Matrix parallelDilate(Matrix& matrix, size_t windowSize, size_t numThreads, size
         threadData[i].startRow = i * rowsPerThread;
         threadData[i].endRow = (i == numThreads - 1) ? rows : (i + 1) * rowsPerThread;
         threadData[i].windowSize = windowSize;
-        threadData[i].hEvent = CreateEvent(NULL, TRUE, FALSE, NULL); // Создаем отдельное событие для каждого потока
+        threadData[i].hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
         threadData[i].hEventDone = CreateEvent(NULL, TRUE, FALSE, NULL);
         doneEvents[i] = threadData[i].hEventDone;
 

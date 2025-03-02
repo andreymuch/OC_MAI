@@ -26,7 +26,6 @@ int main() {
     HANDLE hMapFile;
     char* pBuf;
 
-    // Подключение к разделяемой памяти
     hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "SharedMemory");
     if (hMapFile == NULL) {
         std::cerr << "Не удалось открыть отображаемый файл: " << GetLastError() << std::endl;
@@ -40,16 +39,10 @@ int main() {
         return 1;
     }
 
-    // Извлекаем дескриптор процесса `child1`
     HANDLE hChild1Process = *reinterpret_cast<HANDLE*>(pBuf + BUFFER_SIZE - sizeof(HANDLE));
 
-    // Ожидание завершения `child1`
     WaitForSingleObject(hChild1Process, INFINITE);
-
-    // Удаление дублирующихся пробелов
     remove_duplicate_spaces(pBuf);
-
-    // Очистка ресурсов
     UnmapViewOfFile(pBuf);
     CloseHandle(hMapFile);
     CloseHandle(hChild1Process);

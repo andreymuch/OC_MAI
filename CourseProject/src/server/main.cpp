@@ -64,7 +64,6 @@ std::pair<int, int> countBullsAndCows(const std::string &secret, const std::stri
     return {bulls, cows};
 }
 
-// Извлечение запроса из кольцевой очереди
 bool dequeueRequest(Request &req) {
     WaitForSingleObject(requestMutex, INFINITE);
     if (shm->queueSize == 0) {
@@ -117,7 +116,7 @@ void handleClientRequests() {
                     if (it == activeGames.end()) {
                         response = "Error: No available games!";
                     } else {
-                        gameName = it->first; // Присваиваем найденное имя
+                        gameName = it->first;
                     }
                 }
 
@@ -134,7 +133,6 @@ void handleClientRequests() {
                     strcpy_s(shm->clientResponses[req.clientId].clientResponse, response.c_str());
                     ReleaseMutex(responseMutex);
 
-                    // Цикл игры для игрока
                     while (true) {
                         Request gameReq;
                         if (dequeueRequest(gameReq) && gameReq.clientId == req.clientId) {

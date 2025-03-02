@@ -29,7 +29,6 @@ SharedMemory* shm;
 HANDLE requestMutex, responseMutex;
 int clientId;
 
-// Добавление запроса в кольцевую очередь
 void sendRequest(const std::string& command) {
     WaitForSingleObject(requestMutex, INFINITE);
 

@@ -6,7 +6,7 @@
 #include <sstream>
 #include <map>
 
-// Функция для обработки команд в отдельном потоке
+
 void process_command(std::string name, std::string value, zmq::context_t& context, std::string& client_id) {
     static std::map <std::string, std::string> data;
     std::string response;
@@ -42,28 +42,28 @@ int main(int argc, char* argv[]) {
         std::cerr << "Usage: client <server_address> <router_bind_address> <client_id>" << std::endl;
         return 1;
     }
-    
+   
     std::string server_address = argv[1];
     std::string router_bind_address = argv[2];
     std::string client_id = argv[3];
+
+    std::cout<< "Cleient iD: " + client_id<< std::endl;
+    
     
     zmq::context_t context;
     
-    // Сокет DEALER для связи с сервером
     zmq::socket_t dealer_socket(context, zmq::socket_type::dealer);
     dealer_socket.set(zmq::sockopt::routing_id, client_id);
     dealer_socket.connect(server_address);
-    
-    // Сокет ROUTER для подключения других клиентов
+
     zmq::socket_t router_socket(context, zmq::socket_type::router);
     router_socket.set(zmq::sockopt::router_mandatory, 1);
     router_socket.bind(router_bind_address);
     
-    // Сокет PULL для получения результатов обработки команд
+
     zmq::socket_t pull_socket(context, zmq::socket_type::pull);
     pull_socket.bind("inproc://worker");
     
-    // Мониторинговый сокет для отслеживания событий DEALER
     zmq::socket_t monitor_socket(context, zmq::socket_type::pair);
     zmq_socket_monitor(dealer_socket, "inproc://monitor", ZMQ_EVENT_DISCONNECTED);
     monitor_socket.connect("inproc://monitor");
@@ -76,19 +76,17 @@ int main(int argc, char* argv[]) {
         { static_cast<void*>(monitor_socket), 0, ZMQ_POLLIN, 0 }
     };
 
-    // Отправляем приветственное сообщение серверу
     dealer_socket.send(zmq::buffer("Hello from client"+ client_id), zmq::send_flags::none);
     
     while (true) {
         zmq::poll(items, 4);
         
-        // Обрабатываем входящие сообщения от сервера
         if (items[0].revents & ZMQ_POLLIN) {
             zmq::message_t msg;
             dealer_socket.recv(msg);
             std::string received_command(static_cast<char*>(msg.data()), msg.size());
 
-            
+            std::cout <<"server command: " + received_command << std::endl;
             std::istringstream iss(received_command);
             std::string id, command, name, value;
             iss >> command >> id >> name >> value;
@@ -100,45 +98,45 @@ int main(int argc, char* argv[]) {
 
             if (command == "pingall") {
                 std::string message = "pong " + client_id;
+                std::cout << message << std::endl;
                 zmq::message_t msg(message.begin(), message.end());
                 dealer_socket.send(msg, zmq::send_flags::none);
             }
               
-            for (const auto& client : connected_clients) {
+            for (auto it = connected_clients.begin();  it != connected_clients.end();) {
                 zmq::message_t forward_msg(received_command.begin(), received_command.end());
                 try{
-                    router_socket.send(zmq::message_t(client.begin(), client.end()), zmq::send_flags::sndmore);
+                    router_socket.send(zmq::message_t(it->begin(), it->end()), zmq::send_flags::sndmore);
                     router_socket.send(forward_msg, zmq::send_flags::none);
+                    ++it;
                 }catch (const zmq::error_t&){
-                    std::cerr << "Failed to forward message to client " << client << std::endl;
-                    connected_clients.erase(client);
-                    break;
+                    std::cerr << "Failed to forward message to client " << *it << std::endl;
+                    it = connected_clients.erase(it);
                 }
             }
             
         }
         
-        // Обрабатываем входящие сообщения от других клиентов
         if (items[1].revents & ZMQ_POLLIN) {
             zmq::message_t client_id_msg, msg;
             router_socket.recv(client_id_msg);
             router_socket.recv(msg);
             
-            std::string client_id(static_cast<char*>(client_id_msg.data()), client_id_msg.size());
-            connected_clients.insert(client_id);
+            std::string connected_client_id(static_cast<char*>(client_id_msg.data()), client_id_msg.size());
+            if (connected_clients.insert(connected_client_id).second) {
+                std::cout<<"client connected ID: " + connected_client_id<<std::endl;
+            }
             
             dealer_socket.send(msg, zmq::send_flags::none);
         }
-        
-        // Обрабатываем результаты обработки команд
+
         if (items[2].revents & ZMQ_POLLIN) {
             zmq::message_t msg;
             pull_socket.recv(msg);
-
+            std::cout<< "result for srver massage:"+ std::string(static_cast<char*>(msg.data()), msg.size())<<std::endl;
             dealer_socket.send(msg, zmq::send_flags::none);
         }
         
-        // Обрабатываем событие разрыва соединения с сервером
         if (items[3].revents & ZMQ_POLLIN) {
             std::cerr << "Disconnected from server. Exiting..." << std::endl;
             break;
